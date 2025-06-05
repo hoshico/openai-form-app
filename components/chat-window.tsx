@@ -8,9 +8,16 @@ import { Send, X } from "lucide-react";
 interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
+  onFormUpdate?: (formData: {
+    title: string;
+    slug: string;
+    topic: string;
+    summary: string;
+    content: string;
+  }) => void;
 }
 
-export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
+export function ChatWindow({ isOpen, onClose, onFormUpdate }: ChatWindowProps) {
   const [messages, setMessages] = useState<
     Array<{
       role: "user" | "assistant";
@@ -51,10 +58,27 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
       }
 
       const data = await response.json();
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: data.message },
-      ]);
+
+      // メッセージに「記事を作成」が含まれている場合、フォームを更新
+      if (inputMessage.toLowerCase().includes("記事を作成")) {
+        onFormUpdate?.({
+          title: "サンプル記事タイトル",
+          slug: "sample-article",
+          topic: "rice",
+          summary: "これはサンプルの記事概要です。",
+          content:
+            "これはサンプルの記事本文です。\n\n詳細な内容をここに記載します。",
+        });
+        setMessages([
+          ...newMessages,
+          { role: "assistant", content: "承知しました。記事を作成します。" },
+        ]);
+      } else {
+        setMessages([
+          ...newMessages,
+          { role: "assistant", content: data.message },
+        ]);
+      }
     } catch (error) {
       console.error("エラーが発生しました:", error);
       setMessages([

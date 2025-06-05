@@ -34,6 +34,10 @@ export default function Form() {
     console.log("フォームデータ:", formData);
   };
 
+  const handleFormUpdate = (newFormData: typeof formData) => {
+    setFormData(newFormData);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
       <Card className="w-full max-w-2xl">
@@ -136,7 +140,11 @@ export default function Form() {
       </button>
 
       {/* AIチャットウィンドウ */}
-      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <ChatWindow
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        onFormUpdate={handleFormUpdate}
+      />
     </div>
   );
 }
