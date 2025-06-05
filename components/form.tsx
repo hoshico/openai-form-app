@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { HelpCircle } from "lucide-react";
-import { ChatDialog } from "./chat-dialog";
+import { ChatWindow } from "./chat-window";
 
 export default function Form() {
   const [formData, setFormData] = useState({
@@ -135,8 +135,8 @@ export default function Form() {
         <HelpCircle className="h-5 w-5 text-gray-600" />
       </button>
 
-      {/* AIチャットダイアログ */}
-      <ChatDialog isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
+      {/* AIチャットウィンドウ */}
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
