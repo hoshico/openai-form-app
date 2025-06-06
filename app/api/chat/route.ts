@@ -1,34 +1,19 @@
 import { NextResponse } from "next/server";
+// import { Agent, run } from "@openai/agents";
 
 export async function POST(request: Request) {
   try {
     const { message } = await request.json();
 
-    // OpenAI APIを使用する実装（コメントアウト）
+    // OpenAI Agents SDKを使用する実装（コメントアウト）
     /*
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "あなたはフォーム入力のアシスタントです。",
-          },
-          {
-            role: "user",
-            content: message,
-          },
-        ],
-      }),
+    const agent = new Agent({
+      name: "FormAssistant",
+      instructions: "あなたはフォーム入力のアシスタントです。ユーザーの質問に丁寧に答えてください。",
     });
 
-    const data = await response.json();
-    return NextResponse.json({ message: data.choices[0].message.content });
+    const result = await run(agent, message);
+    return NextResponse.json({ message: result.finalOutput });
     */
 
     // 鸚鵡返しの実装
