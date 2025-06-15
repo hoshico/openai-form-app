@@ -89,7 +89,7 @@ export default function Form() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="rice">米</SelectItem>
-                  <SelectItem value="pesticide">農薬</SelectItem>
+                  <SelectItem value="pesticide">農薩</SelectItem>
                   <SelectItem value="activity">活動</SelectItem>
                 </SelectContent>
               </Select>
@@ -144,6 +144,7 @@ export default function Form() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         onFormUpdate={handleFormUpdate}
+        currentFormData={formData}
       />
     </div>
   );

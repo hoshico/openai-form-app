@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Send, X } from "lucide-react";
 
 interface ChatWindowProps {
@@ -15,9 +15,21 @@ interface ChatWindowProps {
     summary: string;
     content: string;
   }) => void;
+  currentFormData: {
+    title: string;
+    slug: string;
+    topic: string;
+    summary: string;
+    content: string;
+  };
 }
 
-export function ChatWindow({ isOpen, onClose, onFormUpdate }: ChatWindowProps) {
+export function ChatWindow({
+  isOpen,
+  onClose,
+  onFormUpdate,
+  currentFormData,
+}: ChatWindowProps) {
   const [messages, setMessages] = useState<
     Array<{
       role: "user" | "assistant";
@@ -31,16 +43,24 @@ export function ChatWindow({ isOpen, onClose, onFormUpdate }: ChatWindowProps) {
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    // ユーザーメッセージを追加
-    const newMessages: Array<{
-      role: "user" | "assistant";
-      content: string;
-    }> = [...messages, { role: "user", content: inputMessage }];
+    const newMessages = [
+      ...messages,
+      { role: "user" as const, content: inputMessage },
+    ];
     setMessages(newMessages);
     setInputMessage("");
 
@@ -50,7 +70,10 @@ export function ChatWindow({ isOpen, onClose, onFormUpdate }: ChatWindowProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: inputMessage }),
+        body: JSON.stringify({
+          message: inputMessage,
+          formData: currentFormData,
+        }),
       });
 
       if (!response.ok) {
@@ -59,35 +82,31 @@ export function ChatWindow({ isOpen, onClose, onFormUpdate }: ChatWindowProps) {
 
       const data = await response.json();
 
-      // メッセージに「記事を作成」が含まれている場合、フォームを更新
-      if (inputMessage.toLowerCase().includes("記事を作成")) {
-        onFormUpdate?.({
-          title: "サンプル記事タイトル",
-          slug: "sample-article",
-          topic: "rice",
-          summary: "これはサンプルの記事概要です。",
-          content:
-            "これはサンプルの記事本文です。\n\n詳細な内容をここに記載します。",
-        });
-        setMessages([
-          ...newMessages,
-          { role: "assistant", content: "承知しました。記事を作成します。" },
-        ]);
-      } else {
-        setMessages([
-          ...newMessages,
-          { role: "assistant", content: data.message },
-        ]);
+      // フォームの更新情報がある場合は処理
+      if (data.formUpdate) {
+        onFormUpdate?.(data.formUpdate);
       }
+
+      setMessages([
+        ...newMessages,
+        { role: "assistant" as const, content: data.message },
+      ]);
     } catch (error) {
       console.error("エラーが発生しました:", error);
       setMessages([
         ...newMessages,
         {
-          role: "assistant",
+          role: "assistant" as const,
           content: "申し訳ありません。エラーが発生しました。",
         },
       ]);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
     }
   };
 
@@ -126,14 +145,17 @@ export function ChatWindow({ isOpen, onClose, onFormUpdate }: ChatWindowProps) {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <form onSubmit={handleSendMessage} className="border-t p-4 flex gap-2">
-        <Input
+        <Textarea
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="メッセージを入力..."
-          className="flex-1"
+          onKeyDown={handleKeyDown}
+          placeholder="メッセージを入力... (Shift + Enterで改行)"
+          className="flex-1 resize-none"
+          rows={3}
         />
         <Button type="submit" size="icon">
           <Send className="h-4 w-4" />
